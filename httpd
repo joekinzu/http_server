@@ -11,16 +11,21 @@ print(f'Serving HTTP on port {PORT} ...')
 while True:
     client_connection, client_address = listen_socket.accept()
     request_data = client_connection.recv(1024)
+    # file_size = os.path.getsize('./httptest/160313.jpg')
+    # print(file_size)
     try:
     	method, url, ver = (request_data.decode('utf-8').split('\n')[0]).split()
-    	print(method,url,ver)
-    	x = [os.path.join('httptest', fn) for fn in next(os.walk('httptest'))[2]]
-    	print(x)
+    	print(method+'--'+url+'--'+ver)
+    	# x = [os.path.join('httptest', fn) for fn in next(os.walk('httptest'))[2]]
+    	# print(next(os.walk('httptest')))
     	if method in ('GET', 'HEAD'):
     		http_response = b'HTTP/1.1 200 OK\n\nOK!\n'
-    		content_type = mimetypes.guess_type('/httptest/160313.jpg')[0]
-            	with open('/httptest/160313.jpg', 'rb') as file:
-            		http_response = file.read(1024)
+    		if len(url.split('.')[-1]) < len(url):	
+    			file_size = os.path.getsize('.'+url)
+    			# content_type = mimetypes.guess_type('./httptest/160313.jpg')[0]
+    			# print(content_type, file_size)
+    			with open('.'+url, 'rb') as file:
+    				http_response = file.read(file_size)
     		client_connection.sendall(http_response)
     	else:
     		http_response = b'HTTP/1.1 400 BAD\n\nNOT OK!\n'
