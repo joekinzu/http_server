@@ -2,6 +2,7 @@ import socket
 import threading
 import os
 import mimetypes
+from urllib.parse import unquote, urlparse
 
 HEADER = 1024
 PORT = 80
@@ -36,16 +37,13 @@ def build_body(method, url, protocol):
     header = build_header('17/07/2020','Server','text/html','34','close')
     if method in ('GET', 'HEAD'):
         code = 'HTTP/1.1 200 OK\r\n'
-        # if url.endswith('/'):
-        #     url = url + 'index.html'
-        # body = 'OK!\r\n'
-        # res = bytes(code + header + body, encoding= 'utf-8')
         if len(url.split('.')[-1]) < len(url):  
                 file_size = os.path.getsize('.'+url)
                 header = build_header('17/07/2020','Server',mimetypes.MimeTypes().guess_type('.'+url)[0],str(file_size),'close')
                 print(type(mimetypes.MimeTypes().guess_type('.'+url)[0]))
                 with open('.'+url, 'rb') as file:
                     res = bytearray(code + header, encoding= 'utf-8') + file.read(file_size)
+                
         else:
             file_list = next(os.walk('.'+url))[2]
             full_list = next(os.walk('.'+url))[1] + file_list
@@ -56,10 +54,13 @@ def build_body(method, url, protocol):
             print(body)
             print(len(body))
             header = build_header('17/07/2020','Server','text/html',len(body),'close')
-            res = bytes(code + header + body, encoding= 'utf-8')
+            res = bytearray(code + header + body, encoding= 'utf-8')
     else:
         code = 'HTTP/1.1 405 Method Not Allowed '
-        res = bytes(code, encoding= 'utf-8')
+        header = build_header('17/07/2020','Server','text/html',0,'close')
+        res = bytearray(code + header, encoding= 'utf-8')
+    if method == 'HEAD':
+        res = bytearray(code + header, encoding= 'utf-8')
     return res
 
 def build_response(msg):
@@ -69,10 +70,14 @@ def build_response(msg):
             raise ValueError
         if url.endswith('/'):
             url = url + '/index.html'
+        if '?' in url:
+            url = url.split("?")[0]
+        url = unquote(url)
         res = build_body(method, url, protocol)
     except:
         code = 'HTTP/1.1 404 Not Found '
-        res = bytes(code, encoding= 'utf-8')
+        header = build_header('17/07/2020','Server','text/html',0,'close')
+        res = bytearray(code + header, encoding= 'utf-8')
     return res
 
 def handle_client(conn, addr):
