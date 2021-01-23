@@ -1,7 +1,20 @@
-#### Socket python web server
-* connect multiple clients
-* Response - 200, 403 or 404 on GET and HEAD, rest are 405
-* File list inside DOCUMENT_ROOT
-* Call /directory/ is equal DOCUMENT_ROOT/directory/index.html
-* Get headers: Date, Server, Content-Length, Content-Type, Connection
-* File content: .html, .css, .js, .jpg, .jpeg, .png, .gif, .swf
+Simple Python HTTP Web server
+=====================
+
+## Features ##
+* Respond to `GET` with status code in `{200,403,404}`
+* Respond to `HEAD` with status code in `{200,404}`
+* Respond to all other request methods with status code `405`
+* Directory index file name `index.html`
+* Respond to requests for `/<file>.html` with the contents of `DOCUMENT_ROOT/<file>.html`
+* Requests for `/<directory>/` should be interpreted as requests for `DOCUMENT_ROOT/<directory>/index.html`
+* Respond with the following header fields for all requests:
+  * `Server`
+  * `Date`
+  * `Connection`
+  * `Content-Length`
+  * `Content-Type`
+* Respond with correct `Content-Type` for `.html, .css, js, jpg, .jpeg, .png, .gif, .swf`
+* Respond to percent-encoding URLs
+* No security vulnerabilities!
+
