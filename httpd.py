@@ -36,6 +36,8 @@ def build_body(method, url, protocol):
     header = build_header('17/07/2020','Server','text/html','34','close')
     if method in ('GET', 'HEAD'):
         code = 'HTTP/1.1 200 OK\r\n'
+        # if url.endswith('/'):
+        #     url = url + 'index.html'
         # body = 'OK!\r\n'
         # res = bytes(code + header + body, encoding= 'utf-8')
         if len(url.split('.')[-1]) < len(url):  
@@ -47,13 +49,13 @@ def build_body(method, url, protocol):
         else:
             file_list = next(os.walk('.'+url))[2]
             full_list = next(os.walk('.'+url))[1] + file_list
-            html = '<html>\n<body>\nDirectory index file\n<ul>\n'
-            print(os.path.getsize('./httptest/'))
+            html = '<html>\r\n<head>\r\n<title>Directory listing</title></head>\r\n<body>\r\nDirectory index file\r\n<ul>\r\n'
             for x in full_list:
-                html = html + ' <li><a href="' + url + '/' + x + '">' + x + '</a></li>\n'
-            body = html + '<ul>\n</body>\n</html>\n'
+                html = html + ' <li><a href="' + url + '/' + x + '">' + x + '</a></li>\r\n'
+            body = html + '<ul>\r\n</body>\r\n</html>\r\n'
             print(body)
-            header = build_header('17/07/2020','Server','text/html',os.path.getsize('.'+url),'close')
+            print(len(body))
+            header = build_header('17/07/2020','Server','text/html',len(body),'close')
             res = bytes(code + header + body, encoding= 'utf-8')
     else:
         code = 'HTTP/1.1 405 Method Not Allowed '
@@ -63,6 +65,10 @@ def build_body(method, url, protocol):
 def build_response(msg):
     try:
         method, url, protocol = (msg.split('\n')[0]).split()
+        if '../' in url:
+            raise ValueError
+        if url.endswith('/'):
+            url = url + '/index.html'
         res = build_body(method, url, protocol)
     except:
         code = 'HTTP/1.1 404 Not Found '
@@ -75,9 +81,9 @@ def handle_client(conn, addr):
     while connected:
         try:
             msg = receive(conn)
-            print(len(msg))
             response = build_response(msg)
             conn.sendall(response)
+            conn.sendall('<h1>HI</h1>')
         except:
             if conn:
                 conn.close()
